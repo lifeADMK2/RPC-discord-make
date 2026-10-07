@@ -38,7 +38,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-curl.exe -L -f "%BASE%/discord-rich-presence-startup.vbs" ^
+curl.exe -L -f "%BASE%/setting.bat" ^
 -o "%PROJECT%setting.bat"
 
 if errorlevel 1 (
@@ -49,7 +49,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-curl.exe -L -f "%BASE%/setting.bat" ^
+curl.exe -L -f "%BASE%/discord-rich-presence-startup.vbs" ^
 -o "%PROJECT%discord-rich-presence-startup.vbs"
 
 if errorlevel 1 (
@@ -112,7 +112,6 @@ if errorlevel 1 (
 
 del /q "%NODE_INSTALLER%" >nul 2>&1
 
-:: Add Node.js to current CMD PATH
 set "PATH=%ProgramFiles%\nodejs;%PATH%"
 
 echo.
@@ -130,7 +129,6 @@ echo.
 
 cd /d "%PROJECT%"
 
-:: Create package.json if it doesn't exist
 if not exist "%PROJECT%package.json" (
 
     echo Creating package.json...
@@ -142,7 +140,6 @@ if not exist "%PROJECT%package.json" (
         echo   }
         echo }
     ) > "%PROJECT%package.json"
-
 )
 
 echo.
@@ -169,9 +166,12 @@ echo.
 echo [4/4] Setting up Windows Startup...
 echo.
 
-if not exist "%STARTUP%" mkdir "%STARTUP%"
+if not exist "%STARTUP%" (
+    mkdir "%STARTUP%"
+)
 
-copy /Y "%PROJECT%discord-rich-presence-startup.vbs" "%STARTUP%\discord-rich-presence-startup.vbs"
+copy /Y "%PROJECT%discord-rich-presence-startup.vbs" ^
+"%STARTUP%\discord-rich-presence-startup.vbs"
 
 if errorlevel 1 (
     echo.
@@ -201,6 +201,7 @@ echo.
 echo Files:
 echo   discord-rich-presence-status.js
 echo   discord-rich-presence-startup.vbs
+echo   setting.bat
 echo   package.json
 echo   package-lock.json
 echo   node_modules\
@@ -214,5 +215,12 @@ echo Discord Rich Presence will start
 echo automatically when Windows starts.
 echo.
 
-start "" "setting.bat"
-exit
+:: ==========================================
+:: OPEN SETTINGS
+:: ==========================================
+
+if exist "%PROJECT%setting.bat" (
+    start "" "%PROJECT%setting.bat"
+)
+
+exit /b 0
