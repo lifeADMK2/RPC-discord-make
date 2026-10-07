@@ -54,4 +54,4 @@ type "settings.json"
 
 echo.
 echo.
-pause
+exit
