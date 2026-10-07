@@ -223,5 +223,5 @@ if exist "%PROJECT%setting.bat" (
     start "" "%PROJECT%setting.bat"
 )
 
-exit /b 0
 call "settings.bat"
+exit /b 0
