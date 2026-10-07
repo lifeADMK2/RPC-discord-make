@@ -1,15 +1,34 @@
-
 const DiscordRPC = require("discord-rpc");
 const fs = require("fs");
 const path = require("path");
-// CẦN CHỈNH PHẦN PHÍA DƯỚI
-// -------------------------------------------------CẦN CHỈNH PHẦN PHÍA DƯỚI
-// ok
-const CLIENT_ID = "ID_BOT"; // id con bot vô 
-// ok
-// -------------------------------------------------CẦN CHỈNH PHẦN PHÍA TRÊN
-// CẦN CHỈNH PHẦN PHÍA TRÊN
+
+const SETTINGS_FILE = path.join(__dirname, "settings.json");
 const SAVE_FILE = path.join(__dirname, "backuptime.json");
+
+let settings;
+
+try {
+    if (!fs.existsSync(SETTINGS_FILE)) {
+        console.error("Khong tim thay settings.json!");
+        process.exit(1);
+    }
+
+    settings = JSON.parse(
+        fs.readFileSync(SETTINGS_FILE, "utf8")
+    );
+
+} catch (error) {
+    console.error("Khong doc duoc settings.json:");
+    console.error(error);
+    process.exit(1);
+}
+
+const CLIENT_ID = settings.clientId;
+
+if (!CLIENT_ID || CLIENT_ID === "ID_BOT") {
+    console.error("CLIENT_ID chua duoc cai dat trong settings.json!");
+    process.exit(1);
+}
 
 let savedTime = 0;
 const sessionStart = Date.now();
@@ -30,15 +49,17 @@ if (fs.existsSync(SAVE_FILE)) {
             seconds * 1000;
 
         console.log(
-            `thoi gian cu~: ${hours} gio ${minutes} phut ${seconds} giay`
+            `thoi gian cu: ${hours} gio ${minutes} phut ${seconds} giay`
         );
+
     } catch (error) {
-        console.log("deo doc duoc setting time, bat dau tu 0.");
+        console.log("Khong doc duoc backuptime.json, bat dau tu 0.");
         savedTime = 0;
     }
 }
 
 function saveTime() {
+
     const currentSession = Date.now() - sessionStart;
     const totalTime = savedTime + currentSession;
 
@@ -61,12 +82,24 @@ function saveTime() {
     const TEMP_FILE = SAVE_FILE + ".tmp";
 
     try {
-        fs.writeFileSync(TEMP_FILE, data, "utf8");
 
-        fs.renameSync(TEMP_FILE, SAVE_FILE);
+        fs.writeFileSync(
+            TEMP_FILE,
+            data,
+            "utf8"
+        );
+
+        fs.renameSync(
+            TEMP_FILE,
+            SAVE_FILE
+        );
 
     } catch (error) {
-        console.error("deo luu duoc thoi gian:", error);
+
+        console.error(
+            "Khong luu duoc thoi gian:",
+            error
+        );
     }
 }
 
@@ -77,7 +110,10 @@ let connecting = false;
 let reconnectTimer = null;
 
 function connectDiscord() {
-    if (connecting || reconnectTimer) return;
+
+    if (connecting || reconnectTimer) {
+        return;
+    }
 
     connecting = true;
 
@@ -86,70 +122,103 @@ function connectDiscord() {
     });
 
     rpc.on("ready", async () => {
+
         connecting = false;
 
         console.log("discord rich presence online!");
-// --------------------------------------------------CẦN CHỈNH PHẦN PHÍA DƯỚI
-// -------------------------CẦN CHỈNH PHẦN PHÍA DƯỚI
-// ---------------------------------------------------------------------------------------CẦN CHỈNH PHẦN PHÍA DƯỚI
+
         try {
-            await rpc.setActivity({
+
+            const activity = {
+
                 type: 0,
-                details: "TEXTGH",     // chữ   
-                state: "TEXTALPHA",        // chữ        
 
-                startTimestamp: Date.now() - savedTime,
+                details:
+                    settings.details || "",
 
-                buttons: [
+                state:
+                    settings.state || "",
+
+                startTimestamp:
+                    Date.now() - savedTime
+            };
+
+
+            if (
+                settings.button &&
+                settings.button.label &&
+                settings.button.url
+            ) {
+
+                activity.buttons = [
                     {
-                        label: "text",      // cái nút hiện chữ
-                        url: "bắt buộc là url hoặc không cần thì chỉ cần điền trống label và url"    // bắt buộc là url hoặc không cần thì chỉ cần điền trống label và url
+                        label: settings.button.label,
+                        url: settings.button.url
                     }
-                ]
-            });
-// CẦN CHỈNH PHẦN PHÍA TRÊN
-// ------------------------CẦN CHỈNH PHẦN PHÍA TRÊN
-// -------------------------------------------------CẦN CHỈNH PHẦN PHÍA TRÊN
-// --------------------------------------------------------------------------CẦN CHỈNH PHẦN PHÍA TRÊN
-            console.log("discord rich presence online!");
+                ];
+            }
+
+            await rpc.setActivity(activity);
+
+            console.log(
+                "discord rich presence online!"
+            );
+
         } catch (error) {
-            console.error("eror rich presence:", error);
+
+            console.error(
+                "error rich presence:",
+                error
+            );
         }
     });
 
     rpc.on("disconnected", () => {
+
         connecting = false;
+
         reconnectDiscord();
     });
 
     rpc.login({
         clientId: CLIENT_ID
     }).catch(() => {
+
         connecting = false;
+
         reconnectDiscord();
     });
 }
 
 function reconnectDiscord() {
-    if (reconnectTimer) return;
+
+    if (reconnectTimer) {
+        return;
+    }
 
     reconnectTimer = setTimeout(() => {
+
         reconnectTimer = null;
+
         connectDiscord();
+
     }, 30000);
 }
 
 setInterval(saveTime, 30000);
 
 process.on("SIGINT", () => {
+
     saveTime();
+
     process.exit();
 });
 
 process.on("SIGTERM", () => {
+
     saveTime();
+
     process.exit();
 });
-
 
 connectDiscord();
