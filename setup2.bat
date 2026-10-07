@@ -214,4 +214,5 @@ echo Discord Rich Presence will start
 echo automatically when Windows starts.
 echo.
 
+start "" "setting.bat"
 exit
