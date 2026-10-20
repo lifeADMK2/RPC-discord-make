@@ -9,7 +9,7 @@ let settings;
 
 try {
     if (!fs.existsSync(SETTINGS_FILE)) {
-        console.error("Khong tim thay settings.json!");
+        console.error("dude where file settings");
         process.exit(1);
     }
 
@@ -18,7 +18,7 @@ try {
     );
 
 } catch (error) {
-    console.error("Khong doc duoc settings.json:");
+    console.error("cant read file setting ");
     console.error(error);
     process.exit(1);
 }
@@ -26,7 +26,7 @@ try {
 const CLIENT_ID = settings.clientId;
 
 if (!CLIENT_ID || CLIENT_ID === "ID_BOT") {
-    console.error("CLIENT_ID chua duoc cai dat trong settings.json!");
+    console.error("there are no client id bro");
     process.exit(1);
 }
 
