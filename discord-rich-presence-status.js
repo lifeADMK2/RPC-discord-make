@@ -144,18 +144,22 @@ function connectDiscord() {
             };
 
 
-            if (
-                settings.button &&
-                settings.button.label &&
-                settings.button.url
-            ) {
+            if (Array.isArray(settings.buttons)) {
+                activity.buttons = settings.buttons.filter(
+                    button => button.label && button.url
+                ).slice(0, 2);
+            }
 
-                activity.buttons = [
-                    {
-                        label: settings.button.label,
-                        url: settings.button.url
-                    }
-                ];
+            const buttons = Array.isArray(settings.buttons)
+                ? settings.buttons.filter(
+                    b => b.label?.trim() && b.url?.trim()
+                ).slice(0, 2)
+                : [];
+
+            delete activity.buttons;
+
+            if (buttons.length > 0) {
+                activity.buttons = buttons;
             }
 
             await rpc.setActivity(activity);
