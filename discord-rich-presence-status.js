@@ -205,7 +205,7 @@ function reconnectDiscord() {
     }, 30000);
 }
 
-setInterval(saveTime, 30000);
+setInterval(saveTime, 300000);
 
 process.on("SIGINT", () => {
 
